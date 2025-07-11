@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  name           String
+  email          String         @unique
+  password       String
+  isPremium      Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+
+  plants         Plant[]
+  subscriptions  Subscription[]
+}
+
+model Plant {
+  id             Int            @id @default(autoincrement())
+  name           String
+  nickname       String?
+  userId         Int
+  createdAt      DateTime       @default(now())
+
+  user           User           @relation(fields: [userId], references: [id])
+  tasks          Task[]
+  info           BotanicalInfo? @relation(fields: [infoId], references: [id])
+  infoId         Int?
+}
+
+model Task {
+  id             Int            @id @default(autoincrement())
+  title          String
+  description    String?
+  dueDate        DateTime
+  completed      Boolean        @default(false)
+
+  plantId        Int
+  plant          Plant          @relation(fields: [plantId], references: [id])
+}
+
+model BotanicalInfo {
+  id             Int            @id @default(autoincrement())
+  scientificName String
+  commonName     String?
+  sunlight       String?
+  watering       String?
+  spacing        String?
+  soilType       String?
+  imageUrl       String?
+  externalId     String?        // ID desde Trefle o OpenFarm
+
+  plants         Plant[]
+}
+
+model Subscription {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  stripeCustomerId String
+  stripeSubscriptionId String
+  status         String
+  plan           String
+  createdAt      DateTime       @default(now())
+
+  user           User           @relation(fields: [userId], references: [id])
+}
+
+
+
